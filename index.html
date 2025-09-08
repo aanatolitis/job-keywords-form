@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keywords Αναζήτησης Εργασίας</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        
+        #keywordInput {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        #keywordInput:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        #addBtn {
+            padding: 12px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        #addBtn:hover {
+            background-color: #2980b9;
+        }
+        
+        #addBtn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        .keywords-section {
+            margin-top: 20px;
+        }
+        
+        .keywords-section h3 {
+            color: #34495e;
+            margin-bottom: 15px;
+        }
+        
+        #keywordsList {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .keyword-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #ecf0f1;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .keyword-text {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        .remove-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .remove-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .empty-message {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            padding: 20px;
+        }
+        
+        .counter {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Keywords Αναζήτησης Εργασίας</h1>
+        
+        <div class="input-section">
+            <input type="text" id="keywordInput" placeholder='π.χ. "frontend developer", "remote", "Athens"' maxlength="50">
+            <button id="addBtn">Προσθήκη</button>
+        </div>
+        
+        <div class="keywords-section">
+            <h3>Τα Keywords σου <span class="counter" id="counter">(0)</span></h3>
+            <ul id="keywordsList">
+                <li class="empty-message">Δεν έχεις προσθέσει keywords ακόμα</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Βασικές μεταβλητές
+        let keywords = [];
+        const keywordInput = document.getElementById('keywordInput');
+        const addBtn = document.getElementById('addBtn');
+        const keywordsList = document.getElementById('keywordsList');
+        const counter = document.getElementById('counter');
+
+        // Φόρτωση keywords από localStorage κατά την εκκίνηση
+        function loadKeywords() {
+            const storedKeywords = JSON.parse(localStorage.getItem('jobKeywords')) || [];
+            keywords = storedKeywords;
+            renderKeywords();
+        }
+
+        // Αποθήκευση keywords στο localStorage
+        function saveKeywords() {
+            localStorage.setItem('jobKeywords', JSON.stringify(keywords));
+        }
+
+        // Εμφάνιση keywords στη λίστα
+        function renderKeywords() {
+            keywordsList.innerHTML = '';
+            counter.textContent = `(${keywords.length})`;
+            
+            if (keywords.length === 0) {
+                keywordsList.innerHTML = '<li class="empty-message">Δεν έχεις προσθέσει keywords ακόμα</li>';
+                return;
+            }
+
+            keywords.forEach((keyword, index) => {
+                const li = document.createElement('li');
+                li.className = 'keyword-item';
+                li.innerHTML = `
+                    <span class="keyword-text">${keyword}</span>
+                    <button class="remove-btn" onclick="removeKeyword(${index})" title="Αφαίρεση">×</button>
+                `;
+                keywordsList.appendChild(li);
+            });
+        }
+
+        // Προσθήκη keyword
+        function addKeyword() {
+            const keyword = keywordInput.value.trim();
+            
+            if (keyword === '') {
+                alert('Παρακαλώ εισάγετε ένα keyword');
+                return;
+            }
+            
+            if (keywords.includes(keyword)) {
+                alert('Αυτό το keyword υπάρχει ήδη!');
+                return;
+            }
+            
+            keywords.push(keyword);
+            keywordInput.value = '';
+            saveKeywords();
+            renderKeywords();
+        }
+
+        // Αφαίρεση keyword
+        function removeKeyword(index) {
+            if (confirm('Είστε σίγουροι ότι θέλετε να αφαιρέσετε αυτό το keyword;')) {
+                keywords.splice(index, 1);
+                saveKeywords();
+                renderKeywords();
+            }
+        }
+
+        // Event listeners
+        addBtn.addEventListener('click', addKeyword);
+
+        keywordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addKeyword();
+            }
+        });
+
+        keywordInput.addEventListener('input', function() {
+            addBtn.disabled = this.value.trim() === '';
+        });
+
+        // Αρχικοποίηση
+        loadKeywords();
+        addBtn.disabled = true;
+    </script>
+</body>
+</html>
